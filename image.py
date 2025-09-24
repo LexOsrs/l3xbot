@@ -4,12 +4,9 @@ from invocations import InvocationInfo
 def generate_image(filename: str, invos: list[InvocationInfo]) -> None:
     base = Image.open('images/invo_off.png').convert("RGBA")
     highlighted = Image.open('images/invo_on.png').convert("RGBA")
-    print(base, highlighted)
 
     box_width = base.width / 4
     box_height = base.height / 11
-
-    print(box_width, box_height)
 
     frame = base.copy()
 
