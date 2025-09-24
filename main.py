@@ -24,10 +24,12 @@ tree = app_commands.CommandTree(client)
 )
 async def show_invo_image(interaction, level: int):
     desired_level = int(5 * (level / 5))
-    invocations = pick_best_invocations(desired_level)
+    file = f"images/invo_{desired_level}.png"
 
-    file = f"invo_{desired_level}.png"
-    generate_image(file, invocations)
+    if not os.path.exists(file):
+        # Not been requested before, generate
+        invocations = pick_best_invocations(desired_level)
+        generate_image(file, invocations)
 
     await interaction.response.send_message(f"Raid level {desired_level}", file=discord.File(file))
 
