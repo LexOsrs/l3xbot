@@ -12,11 +12,11 @@ A Discord bot project.
 - `images/` - Image assets
 - `tests/` - Unit tests
 
-## Setup
+## Dev
 
-1. Install dependencies:
+1. Test with uv run:
    ```sh
-   pip install -r requirements.txt
+   uv run l3xbot
    ```
 2. Configure your bot token in `config.py`.
 3. Run the bot:

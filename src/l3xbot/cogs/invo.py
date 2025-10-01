@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+ 
 import logging
 from pydantic import BaseModel
 from enum import Enum
@@ -116,9 +117,10 @@ def pick_best_invocations(target_level: int) -> list[InvocationInfo]:
     dfs(0, [], 0)
     return result
 
-def generate_image(filename: str, invos: list[InvocationInfo]) -> None:
-    base = Image.open('images/invo_off.png').convert("RGBA")
-    highlighted = Image.open('images/invo_on.png').convert("RGBA")
+def generate_image(filename: str, invos: list[InvocationInfo]) -> str:
+    images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'images'))
+    base = Image.open(os.path.join(images_dir, 'invo_off.png')).convert("RGBA")
+    highlighted = Image.open(os.path.join(images_dir, 'invo_on.png')).convert("RGBA")
     box_width = base.width / 4
     box_height = base.height / 11
     frame = base.copy()
@@ -132,7 +134,9 @@ def generate_image(filename: str, invos: list[InvocationInfo]) -> None:
         icon = highlighted.crop(box)
         position = (int(invo.x * box_width), int(invo.y * box_height))
         frame.paste(icon, position)
-    frame.save(filename)
+    out_path = os.path.join(images_dir, os.path.basename(filename))
+    frame.save(out_path)
+    return out_path
 
 
 class Invo(commands.Cog):
@@ -142,13 +146,15 @@ class Invo(commands.Cog):
     @discord.app_commands.command(name="invo", description="Show ToA Invocation")
     async def invo(self, interaction: discord.Interaction, level: int):
         desired_level = int(5 * (level / 5))
-        file = f"images/invo_{desired_level}.png"
-        if not os.path.exists(file):
+        file_name = f"invo_{desired_level}.png"
+        images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'images'))
+        out_path = os.path.join(images_dir, file_name)
+        if not os.path.exists(out_path):
             invocations = pick_best_invocations(desired_level)
             for invo in invocations:
                 print(f" - {invo.name} ({invo.points})")
-            generate_image(file, invocations)
-        await interaction.response.send_message(f"Raid level {desired_level}", file=discord.File(file))
+            out_path = generate_image(file_name, invocations)
+        await interaction.response.send_message(f"Raid level {desired_level}", file=discord.File(out_path))
 
 async def setup(bot):
     await bot.add_cog(Invo(bot))

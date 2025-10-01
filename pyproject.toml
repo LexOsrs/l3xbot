@@ -1,0 +1,22 @@
+[project]
+name = "l3xbot"
+version = "0.1.0"
+description = "A Discord bot"
+requires-python = ">=3.13"
+
+dependencies = [
+    "discord.py",
+    "pydantic",
+    "Pillow",
+    "pytest",
+]
+
+[project.scripts]
+l3xbot = "bot:main"
+
+[tool.setuptools.packages.find]
+where = ["src/l3xbot"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

@@ -1,2 +1,8 @@
 __pycache__
 images
+uv.lock
+*.egg-info
+.DS_Store
+src/l3xbot/images
+!src/l3xbot/images/invo_on.png
+!src/l3xbot/images/invo_off.png
