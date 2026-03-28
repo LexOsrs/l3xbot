@@ -6,6 +6,8 @@ import logging
 from cogs.general import General
 from cogs.invo import Invo
 from cogs.rank import Rank
+import re
+from urllib.parse import quote
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
@@ -28,6 +30,23 @@ async def on_ready():
     # Log all registered commands
     for cmd in sorted(bot.tree.get_commands(), key=lambda c: c.name):
         logging.info(f"Available command: /{cmd.name} from {cmd.module}")
+
+@bot.event
+async def on_message(message):
+    pattern = r'\[\[([^]]+)\]\]'
+
+    matches = re.findall(pattern, message.content)
+
+    if matches:
+        reply = '\n'.join(
+            f"https://farmrpg.com/index.php#!/wiki.php?page={quote(match)}"
+            for match in matches
+        )
+        await message.reply(reply, suppress_embeds=True)
+    
+    await bot.process_commands(message)
+
+
 
 def main():
     asyncio.run(load_cogs())
