@@ -6,6 +6,7 @@ import logging
 from cogs.general import General
 from cogs.invo import Invo
 from cogs.rank import Rank
+from cogs.bingo import Bingo
 import re
 from urllib.parse import quote
 
@@ -13,6 +14,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.guild_reactions = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -21,6 +23,7 @@ async def load_cogs():
     await bot.add_cog(General(bot))
     await bot.add_cog(Invo(bot))
     await bot.add_cog(Rank(bot))
+    await bot.add_cog(Bingo(bot))
 
 @bot.event
 async def on_ready():
