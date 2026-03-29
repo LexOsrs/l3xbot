@@ -278,6 +278,7 @@ class Bingo(commands.Cog):
                         submission_id=submission_id,
                         labels=labels,
                         reviewer=reviewer,
+                        reviewer_id=payload.user_id,
                     )
                     try:
                         msg = await channel.fetch_message(payload.message_id)
@@ -293,13 +294,20 @@ class Bingo(commands.Cog):
 class ItemAssignView(ui.View):
     """Discord view with dropdowns to assign items to a submission."""
 
-    def __init__(self, cog: Bingo, submission_id: int, labels: list[str], reviewer: str):
+    def __init__(self, cog: Bingo, submission_id: int, labels: list[str], reviewer: str, reviewer_id: int):
         super().__init__(timeout=300)
         self.cog = cog
         self.submission_id = submission_id
         self.labels = labels
         self.reviewer = reviewer
+        self.reviewer_id = reviewer_id
         self.entries: list[dict] = []
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.reviewer_id:
+            await interaction.response.send_message("Only the approving moderator can use this.", ephemeral=True)
+            return False
+        return True
 
         # Add the requirement select
         options = [discord.SelectOption(label=l, value=l) for l in labels[:25]]
