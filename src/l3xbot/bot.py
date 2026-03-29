@@ -8,6 +8,7 @@ from cogs.invo import Invo
 from cogs.rank import Rank
 from cogs.bingo import Bingo
 import re
+import os
 from urllib.parse import quote
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -27,7 +28,16 @@ async def load_cogs():
 
 @bot.event
 async def on_ready():
-    await bot.tree.sync()
+    guild_id = os.getenv("DISCORD_GUILD_ID")
+    if guild_id:
+        guild = discord.Object(id=int(guild_id))
+        bot.tree.copy_global_to(guild=guild)
+        await bot.tree.sync(guild=guild)
+        # Clear global commands to avoid duplicates
+        bot.tree.clear_commands(guild=None)
+        await bot.tree.sync()
+    else:
+        await bot.tree.sync()
     logging.info("Synced application commands to Discord.")
     logging.info(f"Logged in as {bot.user}")
     # Log all registered commands

@@ -4,6 +4,7 @@ import discord
 import aiohttp
 import logging
 import os
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +164,52 @@ class Bingo(commands.Cog):
             lines.append(f"**{t['name']}** (ID: {t['id']}) — {ch}")
 
         await interaction.response.send_message("\n".join(lines) or "No teams found.")
+
+    @discord.app_commands.command(
+        name="bingo-board",
+        description="Show your team's bingo board (run in your team channel)",
+    )
+    async def bingo_board(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        # Figure out the channel — could be in a thread or the team channel itself
+        channel_id = interaction.channel.parent_id if isinstance(interaction.channel, discord.Thread) else interaction.channel_id
+
+        # Look up which team owns this channel
+        team_data = await self.api_get(f"/discord/team-by-channel/{channel_id}")
+        if not team_data:
+            await interaction.followup.send("This doesn't seem to be a bingo team channel.")
+            return
+
+        event_id = team_data['eventId']
+        team_id = team_data['id']
+
+        # Fetch board data for the summary text
+        data = await self.api_get(f"/discord/board/{event_id}/{team_id}")
+
+        # Fetch the board image from the site
+        session = await self.get_session()
+        async with session.get(f"{API_BASE}/board-image/{event_id}/{team_id}") as resp:
+            if resp.status != 200:
+                await interaction.followup.send("Could not generate board image.")
+                return
+            image_data = await resp.read()
+
+        buf = io.BytesIO(image_data)
+        buf.seek(0)
+
+        summary = ""
+        if data:
+            summary = f"**{data['title']}** — {data['teamName']}\n"
+            summary += f"{data['completedTiles']}/{data['totalTiles']} tiles"
+            if data.get("lines", 0) > 0:
+                summary += f" · {data['lines']} lines"
+            summary += f" · **{data['totalPoints']} pts**"
+
+        await interaction.followup.send(
+            summary,
+            file=discord.File(buf, filename="bingo-board.png"),
+        )
 
     # --- Auto-detect screenshots in tile threads ---
 
